@@ -1,0 +1,26 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Joint Modeling: An Intro
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of this repo is to review statistical approach for jointly modeling data the is comprised of inter-related time-to-event and longitudinal observations. 
+
+This is done leveraging the Review Article [*An overview of joint modeling of time-to-event and longitudinal outcomes*](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048).
+
+
+**Reference:**
+
+Papageorgiou, Grigorios, et al. "An overview of joint modeling of time-to-event and longitudinal outcomes." Annual review of statistics and its application 6 (2019): 223-240.
