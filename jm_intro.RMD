@@ -1,0 +1,35 @@
+---
+title: "An intro to Joint Modeling of Inter-related Time-to-Event and longtidinal processes"
+author: "Afshin Mashadi-Hossein"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+# Motivation
+
+Place holder description of a process  where we have tte outcome with endogenous longitudinal process
+
+--
+
+next bit
+
+---
+
+# Notation and definitions
+
+Define high level notations
+
+---
+
+class: center, middle
+
+# Thanks!
+
+Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
+
+The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](https://yihui.org/knitr/), and [R Markdown](https://rmarkdown.rstudio.com).
