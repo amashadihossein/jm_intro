@@ -10,13 +10,17 @@ output:
       highlightLines: true
       countIncrementalSlides: false
 ---
-# Motivation
+## Motivation: Data Generation Mechansim
 
-Place holder description of a process  where we have tte outcome with endogenous longitudinal process
+Multiple correlated repeated measures ~  Events that discontinue observation
 
---
+![Data Generation Mechanism](./images/data_gen_mech.png)
+---
+## Motivation: Observed Data
 
-next bit
+What happens if the shape of the biomarker is associated with the event?
+
+![Data Observed](./images/data_observed.png)
 
 ---
 
