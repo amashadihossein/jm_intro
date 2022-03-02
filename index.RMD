@@ -14,14 +14,14 @@ output:
 
 Multiple correlated repeated measures ~  Events that discontinue observation
 
-![Data Generation Mechanism](./images/data_gen_mech.png)
+![Data Generation Mechanism](libs/images/data_gen_mech.png)
 ---
 ## Motivation: Observed Data
 
 What happens if the shape of the biomarker is associated with the event?
 
-<!-- ![Data Observed](images/data_observed.png) -->
-<img src="images/data_observed.png">
+![Data Observed](libs/images/data_observed.png)
+<!-- <img src="images/data_observed.png"> -->
 
 ---
 
