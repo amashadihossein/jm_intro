@@ -10,6 +10,17 @@ output:
       highlightLines: true
       countIncrementalSlides: false
 ---
+<style type="text/css">
+.remark-slide-content {
+    font-size: 15px;
+}
+</style>
+
+```{r setup, include=F}
+source("./global.R")
+```
+
+
 ## Motivation: Data Generation Mechansim
 
 Multiple correlated repeated measures ~  Events that discontinue observation
@@ -24,7 +35,70 @@ What happens if the shape of the biomarker is associated with the event?
 <!-- <img src="images/data_observed.png"> -->
 
 ---
+## Real data: PBC
 
+[Primary biliary cholangitis (PBC)](https://en.wikipedia.org/wiki/Primary_biliary_cholangitis)
+is an autoimmune disease affecting liver. As 
+the disease advances, abnormally high levels of serum bilirubin can be observed.
+
+312 patients randomized 1:1 to placebo:treatment (D-penicil) and observed:
+
+
+```{r pbc, message=FALSE,echo=FALSE, fig.retina = 3, fig.width=10, fig.height=6}
+
+srv_d <- pbc2 %>% distinct(id, age, sex, drug, years, status) %>% 
+  mutate(death = if_else(status == "dead", 1, 0))
+srv_ft <- survfit(Surv(time = years, event = death) ~ drug + sex, data = srv_d)
+
+p1 <- ggsurvplot(fit = srv_ft, data = srv_d,palette = "jco",legend = "bottom")+
+  guides(colour = guide_legend(nrow = 5))
+
+p2 <- pbc2 %>% 
+  ggplot(aes(x = year, y = log(serBilir),colour = drug)) +
+  facet_wrap(~sex, nrow = 2)+
+  geom_smooth()+
+  geom_line(aes(group = id), alpha = .2) +
+  xlab("Time (years)") +
+  ylab("log (serum bilirubin)") +
+  ggsci::scale_color_jama() +
+  custom_theme()
+
+p1$plot + p2 #+  plot_layout(widths = c(2, 1))
+```
+
+<!-- -- -->
+
+<!-- ```{r summary, message=FALSE,echo=FALSE} -->
+<!-- srv_d %>% select(drug,sex) %>%  -->
+<!--   gtsummary::tbl_summary(by = drug) -->
+<!-- ``` -->
+
+---
+## PBC data: Combinding longitudinal and TTE
+
+<!-- JM package provides "followup [observation of] of 312 randomized patients with  -->
+<!-- primary biliary cirrhosis, a rare autoimmune liver disease, at Mayo Clinic" -->
+
+```{r pbc_i, message=FALSE,echo=FALSE, fig.retina = 3, fig.width=10}
+set.seed(9)
+pbc2 %>% distinct(id) %>% 
+  sample_n(size = 16,replace = F) %>%
+  left_join(x = ., y = pbc2) %>% 
+  ggplot(aes(x = year, y = log(serBilir))) +
+  geom_point(alpha = .5)+
+  geom_vline(aes(xintercept=years, linetype=factor(status!='dead')), lwd=.5) + 
+  geom_smooth(se=FALSE, method='lm') +
+  facet_wrap(~ id) +
+  scale_x_continuous(name='Time (years)', limits=c(0,15)) +
+  ylab("log (serum bilirubin)")+
+  scale_linetype_manual(name = "status",breaks=c(FALSE, TRUE), values=c(1, 2),
+                        labels=c('death', 'censored'))+
+  custom_theme()+
+  ggtitle("16 randomly selected cases")
+```
+
+
+---
 # Notation and definitions
 
 Define high level notations

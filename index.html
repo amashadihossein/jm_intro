@@ -4,7 +4,7 @@
     <title>An intro to Joint Modeling of Inter-related Time-to-Event and longtidinal processes</title>
     <meta charset="utf-8" />
     <meta name="author" content="Afshin Mashadi-Hossein" />
-    <meta name="date" content="2022-03-01" />
+    <meta name="date" content="2022-03-04" />
     <script src="libs/header-attrs-2.11/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
@@ -15,9 +15,18 @@ class: center, middle, inverse, title-slide
 
 # An intro to Joint Modeling of Inter-related Time-to-Event and longtidinal processes
 ### Afshin Mashadi-Hossein
-### 2022-03-01
+### 2022-03-04
 
 ---
+
+&lt;style type="text/css"&gt;
+.remark-slide-content {
+    font-size: 15px;
+}
+&lt;/style&gt;
+
+
+
 
 ## Motivation: Data Generation Mechansim
 
@@ -33,7 +42,35 @@ What happens if the shape of the biomarker is associated with the event?
 &lt;!-- &lt;img src="images/data_observed.png"&gt; --&gt;
 
 ---
+## Real data: PBC
 
+[Primary biliary cholangitis (PBC)](https://en.wikipedia.org/wiki/Primary_biliary_cholangitis)
+is an autoimmune disease affecting liver. As 
+the disease advances, abnormally high levels of serum bilirubin can be observed.
+
+312 patients randomized 1:1 to placebo:treatment (D-penicil) and observed:
+
+
+&lt;img src="index_files/figure-html/pbc-1.png" width="720" /&gt;
+
+&lt;!-- -- --&gt;
+
+&lt;!-- ```{r summary, message=FALSE,echo=FALSE} --&gt;
+&lt;!-- srv_d %&gt;% select(drug,sex) %&gt;%  --&gt;
+&lt;!--   gtsummary::tbl_summary(by = drug) --&gt;
+&lt;!-- ``` --&gt;
+
+---
+## PBC data: Combinding longitudinal and TTE
+### 16 randomly selected cases
+
+&lt;!-- JM package provides "followup [observation of] of 312 randomized patients with  --&gt;
+&lt;!-- primary biliary cirrhosis, a rare autoimmune liver disease, at Mayo Clinic" --&gt;
+
+&lt;img src="index_files/figure-html/pbc_i-1.png" width="720" /&gt;
+
+
+---
 # Notation and definitions
 
 Define high level notations
