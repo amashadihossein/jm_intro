@@ -10,6 +10,7 @@ output:
       highlightLines: true
       countIncrementalSlides: false
 ---
+
 <style type="text/css">
 .remark-slide-content {
     font-size: 15px;
@@ -30,7 +31,41 @@ source("./global.R")
 ```
 
 
-## Motivation: Data Generation Mechansim
+
+
+## Overview
+
+.pull-left[
+### 1- Motivation
+ - [Data Generation Mechanism](#3)
+ - [Observed Data](#4)
+ - [Real Data Example](#5)
+ - [Joint Modeling](#6)
+
+### 2- Specifying the model
+ - [Longitudinal + TTE](#7)
+ - [Jointly](#9)
+ - [Intuition](#10)
+ - [Generalization](#11)
+]
+
+.pull-right[
+### 3- Solving the model
+ - [Approach](#12)
+ - [Software](#13)
+ - [In Paractice](#14)
+ 
+### 4- Application Example
+- [PBC data](#15)
+
+
+]
+
+
+
+
+---
+## Motivation: Data Generation Mechanism
 
 Multiple correlated repeated measures ~  Events that discontinue observation
 
@@ -46,7 +81,7 @@ What happens if the shape of the biomarker is associated with the event?
 
 ---
 
-## Motivation: Real Example Data
+## Motivation: Real Data Example
 
 [Primary biliary cholangitis (PBC)](https://en.wikipedia.org/wiki/Primary_biliary_cholangitis)
 is an autoimmune disease affecting liver. As 
@@ -121,7 +156,7 @@ visNetwork(nodes = nodes,edges = edges,  width = "100%")
 ]
 
 ---
-## Specifying the model*
+## Specifying the models*: longitudinal + TTE
 
 
 .pull-left[
@@ -135,7 +170,8 @@ $$\eta_i(t) := E[y_i] = x_i(t) \beta + z_i(t) b_i$$
 - $y_i(t)$ is the observed value of biomaker at time $t$
 - $\eta_i(t)$ is the unobserved true value of biomarker at time $t$
 - $\beta$ is the vector of fix-effect parameters
-- $b_i$ is the vector of random-effect parameters for subject $i$
+- $b_i$ is the vector of random-effect parameters for subject $i$ ~ $N(0, D)$
+- $\epsilon_i$ is the iid Gaussian noise ~ $N(0,\sigma)$
 ]
 
 --
@@ -153,55 +189,34 @@ $$\eta_i^{'}(t) = \frac{d\eta_i(t)}{dt}\; (5)$$
 ]
 
 .footnote[*this deviates from [An overview of joint modeling of time-to-event and longitudinal outcomes](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048)
-see [page8](#8)]
+see [page8](#9)]
 
 
 ---
-## Specifying the model*
+## Specifying the Model*: Jointly
 
-### 3. Joint model:
+### 3. Joint likelihood for the observed $y_i, T_i*, \delta_i$:
 
-Joint distribution for $y_i, T_i*, \delta_i$
+$$l(\alpha, \beta, \gamma, \sigma) = \sum_{i=1}^n log (f(y_i, T_i^*, \delta_i))=$$
 
-$$f(y_i, T_i^*, \delta_i) = \int f_Y(y_i | b_i)f_T(T_i^*|b_i)f_b(b_i)db_i =$$
-$$f(y_i, T_i^*, \delta_i) = \int f_Y(y_i | b_i)h(T_i*|b_i)^{\delta_i}S(T_i^*|b_i)f_b(b_i)db_i\; (6)$$
+$$\sum_{i=1}^n log(\int f_Y(y_i | b_i)f_T(T_i^*|b_i)f_b(b_i)db_i) =$$
+$$\sum_{i=1}^n log(\int f_Y(y_i | b_i)h(T_i*|b_i)^{\delta_i}S(T_i^*|b_i)f_b(b_i)db_i)\; (6)$$
 where
-
 - $f_Y$ is the density function for $y_i$
 - $f_b$ is the density function for random effect $b_i$
 - $h(t)$ is the hazard function
 - $S(t)$ is the survival function
 - $\delta_i$ event indicator
 - $b_i$ random effect within subject
+- see [page6](#7) for $\alpha$, $\beta$, $\gamma$ and $\sigma$
 
 
 
-.footnote[*this deviates from [An overview of joint modeling of time-to-event and longitudinal outcomes](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048)
-see [page8](#8)]
-
----
-
-## Generalizing the model
-
-The specification shared in previous slides, is a simplification of a more 
-generalized formulation given in [*An overview of joint modeling of time-to-event and longitudinal outcomes*](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048) by Papageorgiou et al. 
-
-These generalizations include:
-
-- $K$ biomarkers being observed ( $K=1$ in the simplified formulation)
-- Each biomarker is allowed to have its own observation intervals
-- Different types of censoring
-$$\delta = \begin{cases} 0 &:& \; cens_{right} \\ 1 &:& event \\ 2 &:& cens_{left} \\3 &:& cens_{interval} \end{cases}$$
-- Extends eq (3) to generalized link (i.e. glmm)
-- *Exogenous* time-dependent covariate in survival model
-- `r icons::fontawesome("hand-point-right")` most generalized formulation turns 
-out to be overly cumbersome and is (IMO) less useful in practice. Therefore, for intro
-here I opted for simplified (special case) model
-- Notation/flow more closely follows lecture notes by Ben French for UW SISCER 2019
+.footnote[*this deviates from [An overview of joint modeling of time-to-event and longitudinal outcomes](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048) see [page8](#9)]
 
 
 ---
-## Model intuition
+## Specifying the Model: Intuition
 
 .pull-left[
 
@@ -224,6 +239,108 @@ association between hazard and biomarker trajectories
 .pull-right[
 ![Data Observed](libs/images/jm_intuition.png)
 ]
+
+
+---
+
+## Specifying the Model: Generalization
+
+The specification shared in previous slides, is a simplification of a more 
+generalized formulation given in [*An overview of joint modeling of time-to-event and longitudinal outcomes*](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048) by Papageorgiou et al. 
+
+These generalizations:
+
+- $K$ biomarkers being observed ( $K=1$ in the simplified formulation)
+- Each biomarker is allowed to have its own observation intervals
+- Different types of censoring
+$$\delta = \begin{cases} 0 &:& \; cens_{right} \\ 1 &:& event \\ 2 &:& cens_{left} \\3 &:& cens_{interval} \end{cases}$$
+- Extends eq (3) to generalized link (i.e. glmm)
+- *Exogenous* time-dependent covariate in survival model
+- Multiple TTE in competing risks setting (not included by Papageorgiou et al.)
+- `r icons::fontawesome("hand-point-right")` most generalized formulation turns 
+out to be overly cumbersome and is (IMO) less useful in practice. Therefore, for intro
+here I opted for simplified (special case) model
+- Notation/flow more closely follows lecture notes by Ben French for UW SISCER 2019
+
+---
+## Solving the Model: Approach
+
+#### Baseline Hazard, $h_0(t)$:
+- Needed when working with the full likelihood (unlike coxph models)
+- Parametric option include:
+ - $h_0(t) = \lambda$
+ - $h_0(t) = \lambda a t^{a-a}$
+- Flexible options include:
+ - Piecewise constant
+ - Regression splines; e.g. B-splines
+ 
+#### Solvers:
+- Frequentist maximization of likelihood
+ - EM
+ - Newton-Raphson
+- Bayesian
+ - Integration via Laplace approximation
+ - Adaptive Gaussian quadrature
+
+
+---
+## Solving the Model: Software
+
+- *[`JM` by Rizopoulos et al.](https://cran.r-project.org/web/packages/JM/JM.pdf):*
+ - Frequentist approach (EM)
+ - Supports a variety of parametric and flexible construction of $h_0(t)$
+ - Supports single continuous longitudinal outcome
+ - Does not support multiple competing risk settings
+ - Supports options outlined in eq (3) and eq. (4)
+ - Supports dynamic prediction
+
+- *[`JMbayes` by Rizopoulos et al.](https://cran.r-project.org/web/packages/JMbayes/index.html):*
+ - Bayesian approach (MCMC)
+ - Supports a variety of parametric and flexible construction of $h_0(t)$
+ - Supports multivariate continuous and categorical longitudinal outcomes
+ - Supports multiple competing risk settings
+ - Supports dynamic prediction
+
+- Other R packages and functionalities*:
+ - **Solver:** 
+ [`joinR`](https://cran.r-project.org/web/packages/joineR/joineR.pdf), 
+ [`joineRML`](https://cran.r-project.org/web/packages/joineRML/index.html), 
+ [`frailtypack`](https://cran.r-project.org/web/packages/frailtypack/index.html),
+ [`rstanarm`](https://cran.r-project.org/web/packages/rstanarm/vignettes/jm.html), 
+ ...
+ 
+ - **Simulation:** variety of packages provide simulation capabilities including
+ [`JM`](https://cran.r-project.org/web/packages/JM/JM.pdf),
+ [`simSurv`](https://cran.r-project.org/web/packages/simsurv/vignettes/simsurv_usage.html), 
+ [`simjm`](https://github.com/sambrilleman/simjm),
+ [`bamlss`](https://bayesr.r-forge.r-project.org/reference/simJM.html), ...
+
+.footnote[ *I have not yet used them]
+
+---
+## Solving the Model: In Paractice
+
+JM framework/SW are powerful but "getting things to work" could require some 
+effort
+
+### Model accuracy $\leftrightarrow$ complexity
+
+- Like most inference framework care parameterization pays off
+- In addition to overfitting, convergence to a solution is not guaranteed 
+
+### Estimating $h_0(t)$: flexibility $\leftrightarrow$ solution stability
+
+- splines or piecewise constant $h_0$ are more flexible but harder to solve
+
+### Data formatting
+- Moderate your expectation of consistent/standardized (e.g. `tidy`) approach to
+ data
+- You may need to spend some time formatting/cleaning data.
+ - Ensure conformity to required data structure
+ - Align time units across TTE and longitudinal process
+ - If your TTE is not death for example, you will need to manually censor 
+ longitudinal data
+
 
 ---
 ## PBC data: Combinding longitudinal and TTE
