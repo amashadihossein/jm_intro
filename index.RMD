@@ -125,7 +125,7 @@ visNetwork(nodes = nodes,edges = edges,  width = "100%")
 
 
 .pull-left[
-### 1. Biomarker(t) likelihood:
+### 1. Biomarker(t) model:
 
 $$y_i(t) = x_i(t) \beta + z_i(t) b_i + \epsilon_i(t) \; (1)$$
 $$\eta_i(t) := E[y_i] = x_i(t) \beta + z_i(t) b_i$$
@@ -140,7 +140,7 @@ $$\eta_i(t) := E[y_i] = x_i(t) \beta + z_i(t) b_i$$
 
 --
 .pull-right[
-### 2. Hazard(t) likelihood:
+### 2. Hazard(t) model:
 
 $$h_i(t | M_i(t), w_i)=$$
 $$lim_{\Delta \to 0} P\lbrace t \leq T < t + \Delta t | T \geq t, M_i(t), w_i\rbrace/ \Delta t =$$
@@ -152,14 +152,52 @@ $$f:= \alpha_1 \eta_i(t) + \alpha_2 \eta_i^{'}(t)\; (4)$$ where
 $$\eta_i^{'}(t) = \frac{d\eta_i(t)}{dt}\; (5)$$
 ]
 
-.footnote[*This is a simplified case where only 1 biomarker is being modeled and
-the covariate for the hazard model are not time-dependent. Additionally,
-links, other than the Gaussian link can be used for the mixed model]
+.footnote[*this deviates from [An overview of joint modeling of time-to-event and longitudinal outcomes](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048)
+see [page8](#8)]
+
 
 ---
 ## Specifying the model*
 
-### 3. Joint likelihood:
+### 3. Joint model:
+
+Joint distribution for $y_i, T_i*, \delta_i$
+
+$$f(y_i, T_i^*, \delta_i) = \int f_Y(y_i | b_i)f_T(T_i^*|b_i)f_b(b_i)db_i =$$
+$$f(y_i, T_i^*, \delta_i) = \int f_Y(y_i | b_i)h(T_i*|b_i)^{\delta_i}S(T_i^*|b_i)f_b(b_i)db_i\; (6)$$
+where
+
+- $f_Y$ is the density function for $y_i$
+- $f_b$ is the density function for random effect $b_i$
+- $h(t)$ is the hazard function
+- $S(t)$ is the survival function
+- $\delta_i$ event indicator
+- $b_i$ random effect within subject
+
+
+
+.footnote[*this deviates from [An overview of joint modeling of time-to-event and longitudinal outcomes](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048)
+see [page8](#8)]
+
+---
+
+## Generalizing the model
+
+The specification shared in previous slides, is a simplification of a more 
+generalized formulation given in [*An overview of joint modeling of time-to-event and longitudinal outcomes*](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048) by Papageorgiou et al. 
+
+These generalizations include:
+
+- $K$ biomarkers being observed ( $K=1$ in the simplified formulation)
+- Each biomarker is allowed to have its own observation intervals
+- Different types of censoring
+$$\delta = \begin{cases} 0 &:& \; cens_{right} \\ 1 &:& event \\ 2 &:& cens_{left} \\3 &:& cens_{interval} \end{cases}$$
+- Extends eq (3) to generalized link (i.e. glmm)
+- *Exogenous* time-dependent covariate in survival model
+- `r icons::fontawesome("hand-point-right")` most generalized formulation turns 
+out to be overly cumbersome and is (IMO) less useful in practice. Therefore, for intro
+here I opted for simplified (special case) model
+- Notation/flow more closely follows lecture notes by Ben French for UW SISCER 2019
 
 
 ---
