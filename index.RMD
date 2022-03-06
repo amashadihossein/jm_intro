@@ -79,7 +79,7 @@ p1$plot + p2 #+  plot_layout(widths = c(2, 1))
 
 
 ---
-## Motivation: Need for joint modeling
+## Motivation: Joint Modeling
 
 <br> <br> <br> <br>
 
@@ -121,15 +121,71 @@ visNetwork(nodes = nodes,edges = edges,  width = "100%")
 ]
 
 ---
-## Specifying the model
+## Specifying the model*
 
-### 1. longitudinal process
 
-$$y_i(t) = x_i(t) \beta + z_i(t) b_i + \epsilon_i(t)$$
---
+.pull-left[
+### 1. Biomarker(t) likelihood:
 
+$$y_i(t) = x_i(t) \beta + z_i(t) b_i + \epsilon_i(t) \; (1)$$
 $$\eta_i(t) := E[y_i] = x_i(t) \beta + z_i(t) b_i$$
 
+<br> <br> <br> 
+
+- $y_i(t)$ is the observed value of biomaker at time $t$
+- $\eta_i(t)$ is the unobserved true value of biomarker at time $t$
+- $\beta$ is the vector of fix-effect parameters
+- $b_i$ is the vector of random-effect parameters for subject $i$
+]
+
+--
+.pull-right[
+### 2. Hazard(t) likelihood:
+
+$$h_i(t | M_i(t), w_i)=$$
+$$lim_{\Delta \to 0} P\lbrace t \leq T < t + \Delta t | T \geq t, M_i(t), w_i\rbrace/ \Delta t =$$
+$$h_0(t)exp\lbrace w_i \gamma + f(\alpha, w_i, b_i, M_i(t))\rbrace \; (2)$$
+<br>
+commonly used functions $f$ are
+$$f:= \alpha \eta_i(t) \; (3)$$
+$$f:= \alpha_1 \eta_i(t) + \alpha_2 \eta_i^{'}(t)\; (4)$$ where
+$$\eta_i^{'}(t) = \frac{d\eta_i(t)}{dt}\; (5)$$
+]
+
+.footnote[*This is a simplified case where only 1 biomarker is being modeled and
+the covariate for the hazard model are not time-dependent. Additionally,
+links, other than the Gaussian link can be used for the mixed model]
+
+---
+## Specifying the model*
+
+### 3. Joint likelihood:
+
+
+---
+## Model intuition
+
+.pull-left[
+
+<br> <br> <br> <br>
+
+- The model assumes $h_0(t)$ is linked with $y(t)$ through $f$
+
+- when $f$ is defined by equation $(3)$, $h_0(t)$ and the unobserved true value
+of biomarker at time $t$ are linked by scale factor $\alpha$
+
+- when $f$ is defined by equation $(4)$, in addition to association with the 
+value of biomarker at time $t$ through $\alpha_1$, $h_0(t)$ is associate with 
+temporal slope of the biomarker $\alpha_2$
+
+- Other features such as area under the curve of the biomarker could inform the
+association between hazard and biomarker trajectories
+
+]
+
+.pull-right[
+![Data Observed](libs/images/jm_intuition.png)
+]
 
 ---
 ## PBC data: Combinding longitudinal and TTE

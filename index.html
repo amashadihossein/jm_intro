@@ -70,7 +70,7 @@ the disease advances, abnormally high levels of serum bilirubin can be observed.
 
 
 ---
-## Motivation: Need for joint modeling
+## Motivation: Joint Modeling
 
 &lt;br&gt; &lt;br&gt; &lt;br&gt; &lt;br&gt;
 
@@ -93,20 +93,76 @@ _bili(t)_ and death**
 
 
 .pull-right[
-<div id="htmlwidget-6e01f63c8de88a0b12f2" style="width:100%;height:216px;" class="visNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-6e01f63c8de88a0b12f2">{"x":{"nodes":{"id":[1,3,2],"label":["bilirubin","treatment","death"],"shadow":[true,true,true],"shape":["circle","circle","circle"],"font.size":[11.1111111111111,11.1111111111111,20],"color":["darkgray","darkgray","darkgray"]},"edges":{"from":[1,3,3,2],"to":[2,1,2,1],"arrows":["to","to","to","to"],"dashes":[false,false,false,true],"color":["darkgray","darkgray","darkgray","red"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false}},"groups":null,"width":"100%","height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-de82d56074228709f344" style="width:100%;height:216px;" class="visNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-de82d56074228709f344">{"x":{"nodes":{"id":[1,3,2],"label":["bilirubin","treatment","death"],"shadow":[true,true,true],"shape":["circle","circle","circle"],"font.size":[11.1111111111111,11.1111111111111,20],"color":["darkgray","darkgray","darkgray"]},"edges":{"from":[1,3,3,2],"to":[2,1,2,1],"arrows":["to","to","to","to"],"dashes":[false,false,false,true],"color":["darkgray","darkgray","darkgray","red"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false}},"groups":null,"width":"100%","height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script>
 ]
 
 ---
-## Specifying the model
+## Specifying the model*
 
-### 1. longitudinal process
 
-`$$y_i(t) = x_i(t) \beta + z_i(t) b_i + \epsilon_i(t)$$`
---
+.pull-left[
+### 1. Biomarker(t) likelihood:
 
+`$$y_i(t) = x_i(t) \beta + z_i(t) b_i + \epsilon_i(t) \; (1)$$`
 `$$\eta_i(t) := E[y_i] = x_i(t) \beta + z_i(t) b_i$$`
 
+&lt;br&gt; &lt;br&gt; &lt;br&gt; 
+
+- `\(y_i(t)\)` is the observed value of biomaker at time `\(t\)`
+- `\(\eta_i(t)\)` is the unobserved true value of biomarker at time `\(t\)`
+- `\(\beta\)` is the vector of fix-effect parameters
+- `\(b_i\)` is the vector of random-effect parameters for subject `\(i\)`
+]
+
+--
+.pull-right[
+### 2. Hazard(t) likelihood:
+
+`$$h_i(t | M_i(t), w_i)=$$`
+`$$lim_{\Delta \to 0} P\lbrace t \leq T &lt; t + \Delta t | T \geq t, M_i(t), w_i\rbrace/ \Delta t =$$`
+`$$h_0(t)exp\lbrace w_i \gamma + f(\alpha, w_i, b_i, M_i(t))\rbrace \; (2)$$`
+&lt;br&gt;
+commonly used functions `\(f\)` are
+`$$f:= \alpha \eta_i(t) \; (3)$$`
+`$$f:= \alpha_1 \eta_i(t) + \alpha_2 \eta_i^{'}(t)\; (4)$$` where
+`$$\eta_i^{'}(t) = \frac{d\eta_i(t)}{dt}\; (5)$$`
+]
+
+.footnote[*This is a simplified case where only 1 biomarker is being modeled and
+the covariate for the hazard model are not time-dependent. Additionally,
+links, other than the Gaussian link can be used for the mixed model]
+
+---
+## Specifying the model*
+
+### 3. Joint likelihood:
+
+
+---
+## Model intuition
+
+.pull-left[
+
+&lt;br&gt; &lt;br&gt; &lt;br&gt; &lt;br&gt;
+
+- The model assumes `\(h_0(t)\)` is linked with `\(y(t)\)` through `\(f\)`
+
+- when `\(f\)` is defined by equation `\((3)\)`, `\(h_0(t)\)` and the unobserved true value
+of biomarker at time `\(t\)` are linked by scale factor `\(\alpha\)`
+
+- when `\(f\)` is defined by equation `\((4)\)`, in addition to association with the 
+value of biomarker at time `\(t\)` through `\(\alpha_1\)`, `\(h_0(t)\)` is associate with 
+temporal slope of the biomarker `\(\alpha_2\)`
+
+- Other features such as area under the curve of the biomarker could inform the
+association between hazard and biomarker trajectories
+
+]
+
+.pull-right[
+![Data Observed](libs/images/jm_intuition.png)
+]
 
 ---
 ## PBC data: Combinding longitudinal and TTE
