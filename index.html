@@ -53,7 +53,7 @@ class: center, middle, inverse, title-slide
  - [Real Data Example](#5)
  - [Joint Modeling](#6)
 
-### 2- Specifying the model
+### 2- Specifying the Model
  - [Longitudinal + TTE](#7)
  - [Jointly](#9)
  - [Intuition](#10)
@@ -61,14 +61,14 @@ class: center, middle, inverse, title-slide
 ]
 
 .pull-right[
-### 3- Solving the model
+### 3- Solving the Model
  - [Approach](#12)
  - [Software](#13)
  - [In Paractice](#14)
  
-### 4- Application Example
+### 4- Application
 - [PBC data](#15)
-
+- [Coding the Model](#16)
 
 ]
 
@@ -128,8 +128,8 @@ _bili(t)_ and death**
 
 
 .pull-right[
-<div id="htmlwidget-6c1e3c6bfb8543226ffd" style="width:100%;height:216px;" class="visNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-6c1e3c6bfb8543226ffd">{"x":{"nodes":{"id":[1,3,2],"label":["bilirubin","treatment","death"],"shadow":[true,true,true],"shape":["circle","circle","circle"],"font.size":[11.1111111111111,11.1111111111111,20],"color":["darkgray","darkgray","darkgray"]},"edges":{"from":[1,3,3,2],"to":[2,1,2,1],"arrows":["to","to","to","to"],"dashes":[false,false,false,true],"color":["darkgray","darkgray","darkgray","red"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false}},"groups":null,"width":"100%","height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-3e83965d057d7e6f8ba1" style="width:100%;height:216px;" class="visNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3e83965d057d7e6f8ba1">{"x":{"nodes":{"id":[1,3,2],"label":["bilirubin","treatment","death"],"shadow":[true,true,true],"shape":["circle","circle","circle"],"font.size":[11.1111111111111,11.1111111111111,20],"color":["darkgray","darkgray","darkgray"]},"edges":{"from":[1,3,3,2],"to":[2,1,2,1],"arrows":["to","to","to","to"],"dashes":[false,false,false,true],"color":["darkgray","darkgray","darkgray","red"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false}},"groups":null,"width":"100%","height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script>
 ]
 
 ---
@@ -144,7 +144,7 @@ _bili(t)_ and death**
 
 &lt;br&gt; &lt;br&gt; &lt;br&gt; 
 
-- `\(y_i(t)\)` is the observed value of biomaker at time `\(t\)`
+- `\(y_i(t)\)` is the observed value of biomarker at time `\(t\)`
 - `\(\eta_i(t)\)` is the unobserved true value of biomarker at time `\(t\)`
 - `\(\beta\)` is the vector of fix-effect parameters
 - `\(b_i\)` is the vector of random-effect parameters for subject `\(i\)` ~ `\(N(0, D)\)`
@@ -329,19 +329,41 @@ effort
 
 
 ---
-# Notation and definitions
+## Application: Coding the Model
 
-Define high level notations
+**1. Model longitudinal process:** Here, we interested in trt effect.
+- Does the slope of bili differs between trt arms?
+
+
+```r
+mod_t &lt;- lme(log(serBilir) ~ year + drug:year,
+             random = ~ 1 + year|id, data = pbc2)
+```
+
+
+**2. Model TTE:** Here, we interested in trt effect.
+- Is there hazard shift associated with treatment?
+- We use sex as precision variable
+- &lt;svg viewBox="0 0 576 512" style="height:1em;position:relative;display:inline-block;top:.1em;fill:orange;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937 0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288 354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"&gt;&lt;/path&gt;&lt;/svg&gt; note requirement `x = T`
+
+
+```r
+mod_cox &lt;- coxph(Surv(time = years, event = death) ~ drug + sex, 
+                 data = srv_d, x = T)
+```
+
+**3. Model JM:** Combine the two model specifications and jointly solve with defaults:
+- **`parameterization = value`** i.e specification in [eq(3)](#8)
+- **`method = "weibull-PH-aGH"`**  &amp;#8594; parameterized weibull prop hazard
+
+
+```r
+mod_jm &lt;- jointModel(lmeObject = mod_t, survObject = mod_cox,
+                     timeVar = "year")
+```
+
 
 ---
-
-class: center, middle
-
-# Thanks!
-
-Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
-
-The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](https://yihui.org/knitr/), and [R Markdown](https://rmarkdown.rstudio.com).
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

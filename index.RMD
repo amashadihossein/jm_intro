@@ -42,7 +42,7 @@ source("./global.R")
  - [Real Data Example](#5)
  - [Joint Modeling](#6)
 
-### 2- Specifying the model
+### 2- Specifying the Model
  - [Longitudinal + TTE](#7)
  - [Jointly](#9)
  - [Intuition](#10)
@@ -50,14 +50,14 @@ source("./global.R")
 ]
 
 .pull-right[
-### 3- Solving the model
+### 3- Solving the Model
  - [Approach](#12)
  - [Software](#13)
  - [In Paractice](#14)
  
-### 4- Application Example
+### 4- Application
 - [PBC data](#15)
-
+- [Coding the Model](#16)
 
 ]
 
@@ -167,7 +167,7 @@ $$\eta_i(t) := E[y_i] = x_i(t) \beta + z_i(t) b_i$$
 
 <br> <br> <br> 
 
-- $y_i(t)$ is the observed value of biomaker at time $t$
+- $y_i(t)$ is the observed value of biomarker at time $t$
 - $\eta_i(t)$ is the unobserved true value of biomarker at time $t$
 - $\beta$ is the vector of fix-effect parameters
 - $b_i$ is the vector of random-effect parameters for subject $i$ ~ $N(0, D)$
@@ -368,16 +368,35 @@ pbc2 %>% distinct(id) %>%
 
 
 ---
-# Notation and definitions
+## Application: Coding the Model
 
-Define high level notations
+**1. Model longitudinal process:** Here, we interested in trt effect.
+- Does the slope of bili differs between trt arms?
+
+```{r modt_build, echo = T}
+mod_t <- lme(log(serBilir) ~ year + drug:year,
+             random = ~ 1 + year|id, data = pbc2)
+```
+
+
+**2. Model TTE:** Here, we interested in trt effect.
+- Is there hazard shift associated with treatment?
+- We use sex as precision variable
+- `r icons::fontawesome("exclamation-triangle") %>% icons::icon_style(fill = "orange")` note requirement `x = T`
+
+```{r modcox_build, echo=TRUE}
+mod_cox <- coxph(Surv(time = years, event = death) ~ drug + sex, 
+                 data = srv_d, x = T)
+```
+
+**3. Model JM:** Combine the two model specifications and jointly solve with defaults:
+- **`parameterization = value`** i.e specification in [eq(3)](#8)
+- **`method = "weibull-PH-aGH"`**  &#8594; parameterized weibull prop hazard
+
+```{r modjm_build, echo=TRUE}
+mod_jm <- jointModel(lmeObject = mod_t, survObject = mod_cox,
+                     timeVar = "year")
+```
+
 
 ---
-
-class: center, middle
-
-# Thanks!
-
-Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
-
-The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](https://yihui.org/knitr/), and [R Markdown](https://rmarkdown.rstudio.com).
