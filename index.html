@@ -4,7 +4,7 @@
     <title>A Review of Joint Modeling of Inter-related Time-to-Event and longtidinal processes</title>
     <meta charset="utf-8" />
     <meta name="author" content="Afshin Mashadi-Hossein" />
-    <meta name="date" content="2022-03-06" />
+    <meta name="date" content="2022-03-07" />
     <script src="libs/header-attrs-2.11/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
@@ -19,7 +19,7 @@ class: center, middle, inverse, title-slide
 
 # A Review of Joint Modeling of Inter-related Time-to-Event and longtidinal processes
 ### Afshin Mashadi-Hossein
-### 2022-03-06
+### 2022-03-07
 
 ---
 
@@ -128,8 +128,8 @@ _bili(t)_ and death**
 
 
 .pull-right[
-<div id="htmlwidget-3e83965d057d7e6f8ba1" style="width:100%;height:216px;" class="visNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-3e83965d057d7e6f8ba1">{"x":{"nodes":{"id":[1,3,2],"label":["bilirubin","treatment","death"],"shadow":[true,true,true],"shape":["circle","circle","circle"],"font.size":[11.1111111111111,11.1111111111111,20],"color":["darkgray","darkgray","darkgray"]},"edges":{"from":[1,3,3,2],"to":[2,1,2,1],"arrows":["to","to","to","to"],"dashes":[false,false,false,true],"color":["darkgray","darkgray","darkgray","red"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false}},"groups":null,"width":"100%","height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-6b41d22a423db097c704" style="width:100%;height:216px;" class="visNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-6b41d22a423db097c704">{"x":{"nodes":{"id":[1,3,2],"label":["bilirubin","treatment","death"],"shadow":[true,true,true],"shape":["circle","circle","circle"],"font.size":[11.1111111111111,11.1111111111111,20],"color":["darkgray","darkgray","darkgray"]},"edges":{"from":[1,3,3,2],"to":[2,1,2,1],"arrows":["to","to","to","to"],"dashes":[false,false,false,true],"color":["darkgray","darkgray","darkgray","red"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false}},"groups":null,"width":"100%","height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script>
 ]
 
 ---
@@ -246,7 +246,7 @@ here I opted for simplified (special case) model
 - Needed when working with the full likelihood (unlike coxph models)
 - Parametric option include:
  - `\(h_0(t) = \lambda\)`
- - `\(h_0(t) = \lambda a t^{a-a}\)`
+ - `\(h_0(t) = \lambda a t^{a-1}\)`
 - Flexible options include:
  - Piecewise constant
  - Regression splines; e.g. B-splines
