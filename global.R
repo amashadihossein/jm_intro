@@ -6,6 +6,7 @@ library(dplyr)
 library(survival)
 library(survminer)
 library(JM)
+library(nlme)
 
 library(conflicted)
 conflict_prefer("select", "dplyr")
