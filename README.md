@@ -7,12 +7,13 @@
 <!-- badges: end -->
 
 The goal of this repo is to review statistical approach for jointly
-modeling data the is comprised of inter-related time-to-event and
+modeling data that is comprised of inter-related time-to-event and
 longitudinal observations.
 
 This is done leveraging the Review Article [*An overview of joint
 modeling of time-to-event and longitudinal
-outcomes*](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048).
+outcomes*](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048)
+and is *loosely* based on that.
 
 **Reference:**
 
