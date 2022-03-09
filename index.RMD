@@ -509,4 +509,4 @@ mtext('log serum bilirubin', side=2, line=-1, outer=TRUE)
 mtext('Survival probability', side=4, line=-1, outer=TRUE)
 ```
 
-.footnote[Code snipet credit: [Dr Ben French](https://www.vumc.org/biostatistics/person/benjamin-french)] 
+.footnote[Code snippet credit: [Dr Ben French](https://www.vumc.org/biostatistics/person/benjamin-french)] 
