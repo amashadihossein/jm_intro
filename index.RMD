@@ -294,7 +294,7 @@ $$\delta = \begin{cases} 0 &:& \; cens_{right} \\ 1 &:& event \\ 2 &:& cens_{lef
 - `r icons::fontawesome("hand-point-right")` most generalized formulation turns 
 out to be overly cumbersome and is (IMO) less useful in practice. Therefore, for intro
 here I opted for simplified (special case) model
-- Notation/flow more closely follows lecture notes by Ben French for UW SISCER 2019
+- Notation/flow more closely follows lecture notes by [Dr Ben French](https://www.vumc.org/biostatistics/person/benjamin-french) for UW SISCER 2019
 
 ---
 ## Solving the Model: Approach
@@ -487,4 +487,26 @@ suggests being female is associated with decrease hazard
 (i.e. `Assoc`) suggests $\uparrow$ bili $\Rightarrow$ hazard $\uparrow$ 
 
 
- 
+---
+## Application: Dynamic Prediction
+
+With model jointly solved, predictions connecting biomarker trajectories (e.g.
+value and/or slope and/or auc etc.) to proabilities events are feasible.
+
+```{r dyn_pred, echo= F, fig.height=6, fig.width= 10}
+ND <- subset(pbc2, id==15)
+survPreds <- vector('list', nrow(ND))
+for(i in 1:nrow(ND)){
+  set.seed(4)
+  survPreds[[i]] <- survfitJM(mod_jm, newdata=ND[1:i,])}
+
+par(mfrow=c(1,3))
+for(i in c(3,6,9)){
+  plot(survPreds[[i]], estimator='median', conf.int=TRUE, include.y=TRUE, pch=19, lwd=2, col='blue',
+       xlab='', ylab='', ylab2='', main=paste(round(survPreds[[i]]$last.time, 1), 'years'))}
+mtext('Time, years', side=1, line=-2, outer=TRUE)
+mtext('log serum bilirubin', side=2, line=-1, outer=TRUE)
+mtext('Survival probability', side=4, line=-1, outer=TRUE)
+```
+
+.footnote[Code snipet credit: [Dr Ben French](https://www.vumc.org/biostatistics/person/benjamin-french)] 
