@@ -1,5 +1,5 @@
 ---
-title: "Modeling Inter-related Time-to-Event and longtidinal processes"
+title: "Modeling Inter-related Time-to-Event and Longtidinal processes"
 subtitle: "A Review of Joint Modeling"
 author: "Afshin Mashadi-Hossein"
 date: "`r Sys.Date()`"
