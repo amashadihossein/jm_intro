@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>A Review of Joint Modeling of Inter-related Time-to-Event and longtidinal processes</title>
+    <title>Modeling Inter-related Time-to-Event and longtidinal processes</title>
     <meta charset="utf-8" />
     <meta name="author" content="Afshin Mashadi-Hossein" />
-    <meta name="date" content="2022-03-07" />
+    <meta name="date" content="2022-03-09" />
     <script src="libs/header-attrs-2.11/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
@@ -17,9 +17,10 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# A Review of Joint Modeling of Inter-related Time-to-Event and longtidinal processes
+# Modeling Inter-related Time-to-Event and longtidinal processes
+## A Review of Joint Modeling
 ### Afshin Mashadi-Hossein
-### 2022-03-07
+### 2022-03-09
 
 ---
 
@@ -51,24 +52,25 @@ class: center, middle, inverse, title-slide
  - [Data Generation Mechanism](#3)
  - [Observed Data](#4)
  - [Real Data Example](#5)
- - [Joint Modeling](#6)
+ - [Joint Modeling](#7)
 
 ### 2- Specifying the Model
- - [Longitudinal + TTE](#7)
- - [Jointly](#9)
- - [Intuition](#10)
- - [Generalization](#11)
+ - [Longitudinal + TTE](#8)
+ - [Jointly](#10)
+ - [Intuition](#11)
+ - [Generalization](#12)
 ]
 
 .pull-right[
 ### 3- Solving the Model
- - [Approach](#12)
- - [Software](#13)
- - [In Paractice](#14)
+ - [Approach](#13)
+ - [Software](#14)
+ - [In Paractice](#15)
  
 ### 4- Application
-- [PBC data](#15)
 - [Coding the Model](#16)
+- [Interpreting the Model](#19)
+- [Dynamic Prediction](#21)
 
 ]
 
@@ -84,7 +86,7 @@ Multiple correlated repeated measures ~  Events that discontinue observation
 ---
 ## Motivation: Observed Data
 
-What happens if the shape of the biomarker is associated with the event?
+What happens if the trajectories of the biomarkers are associated with the event?
 
 ![Data Observed](libs/images/data_observed.png)
 &lt;!-- &lt;img src="images/data_observed.png"&gt; --&gt;
@@ -98,10 +100,20 @@ What happens if the shape of the biomarker is associated with the event?
 is an autoimmune disease affecting liver. As 
 the disease advances, abnormally high levels of serum bilirubin can be observed.
 
-312 patients randomized 1:1 to placebo:treatment (D-penicillamine) and observed:
+312 patients randomized 1:1 to placebo:treatment (D-penicillamine) and were observed:
 
 
 &lt;img src="index_files/figure-html/pbc-1.png" width="720" /&gt;
+
+---
+## Motivation: Real Data Example
+
+#### Combining longitudinal and TTE
+
+&lt;!-- JM package provides "followup [observation of] of 312 randomized patients with  --&gt;
+&lt;!-- primary biliary cirrhosis, a rare autoimmune liver disease, at Mayo Clinic" --&gt;
+
+&lt;img src="index_files/figure-html/pbc_i-1.png" width="720" /&gt;
 
 
 ---
@@ -128,8 +140,8 @@ _bili(t)_ and death**
 
 
 .pull-right[
-<div id="htmlwidget-6b41d22a423db097c704" style="width:100%;height:216px;" class="visNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-6b41d22a423db097c704">{"x":{"nodes":{"id":[1,3,2],"label":["bilirubin","treatment","death"],"shadow":[true,true,true],"shape":["circle","circle","circle"],"font.size":[11.1111111111111,11.1111111111111,20],"color":["darkgray","darkgray","darkgray"]},"edges":{"from":[1,3,3,2],"to":[2,1,2,1],"arrows":["to","to","to","to"],"dashes":[false,false,false,true],"color":["darkgray","darkgray","darkgray","red"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false}},"groups":null,"width":"100%","height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-26187967e485b19d63d5" style="width:100%;height:216px;" class="visNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-26187967e485b19d63d5">{"x":{"nodes":{"id":[1,3,2],"label":["bilirubin","treatment","death"],"shadow":[true,true,true],"shape":["circle","circle","circle"],"font.size":[11.1111111111111,11.1111111111111,20],"color":["darkgray","darkgray","darkgray"]},"edges":{"from":[1,3,3,2],"to":[2,1,2,1],"arrows":["to","to","to","to"],"dashes":[false,false,false,true],"color":["darkgray","darkgray","darkgray","red"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false}},"groups":null,"width":"100%","height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script>
 ]
 
 ---
@@ -166,18 +178,18 @@ commonly used functions `\(f\)` are
 ]
 
 .footnote[*this deviates from [An overview of joint modeling of time-to-event and longitudinal outcomes](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048)
-see [page8](#9)]
+see [page 11](#12)]
 
 
 ---
 ## Specifying the Model*: Jointly
 
-### 3. Joint likelihood for the observed `\(y_i, T_i*, \delta_i\)`:
+### 3. Joint log likelihood for the observed `\(y_i, T_i, \delta_i\)`:
 
-`$$l(\alpha, \beta, \gamma, \sigma) = \sum_{i=1}^n log (f(y_i, T_i^*, \delta_i))=$$`
+`$$l(\alpha, \beta, \gamma, \sigma|D_n) = \sum_{i=1}^n log (f(y_i, T_i, \delta_i))=$$`
 
-`$$\sum_{i=1}^n log(\int f_Y(y_i | b_i)f_T(T_i^*|b_i)f_b(b_i)db_i) =$$`
-`$$\sum_{i=1}^n log(\int f_Y(y_i | b_i)h(T_i*|b_i)^{\delta_i}S(T_i^*|b_i)f_b(b_i)db_i)\; (6)$$`
+`$$\sum_{i=1}^n log(\int f_Y(y_i | b_i)f_T(T_i|b_i)f_b(b_i)db_i) =$$`
+`$$\sum_{i=1}^n log(\int f_Y(y_i | b_i)h(T_i|b_i)^{\delta_i}S(T_i|b_i)f_b(b_i)db_i)\; (6)$$`
 where
 - `\(f_Y\)` is the density function for `\(y_i\)`
 - `\(f_b\)` is the density function for random effect `\(b_i\)`
@@ -185,11 +197,12 @@ where
 - `\(S(t)\)` is the survival function
 - `\(\delta_i\)` event indicator
 - `\(b_i\)` random effect within subject
-- see [page6](#7) for `\(\alpha\)`, `\(\beta\)`, `\(\gamma\)` and `\(\sigma\)`
+- `\(D_n\)` is the observed data
+- see [page 8](#9) for `\(\alpha\)`, `\(\beta\)`, `\(\gamma\)` and `\(\sigma\)`
 
 
 
-.footnote[*this deviates from [An overview of joint modeling of time-to-event and longitudinal outcomes](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048) see [page8](#9)]
+.footnote[*this deviates from [An overview of joint modeling of time-to-event and longitudinal outcomes](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048) see [page 11](#12)]
 
 
 ---
@@ -199,17 +212,17 @@ where
 
 &lt;br&gt; &lt;br&gt; &lt;br&gt; &lt;br&gt;
 
-- The model assumes `\(h_0(t)\)` is linked with `\(y(t)\)` through `\(f\)`
+- The model assumes `\(h_0(t)\)` is linked with the true unobserved biomarker `\(\eta(t)\)` through `\(f\)`
 
-- when `\(f\)` is defined by equation `\((3)\)`, `\(h_0(t)\)` and the unobserved true value
+- When `\(f\)` is defined by equation `\((3)\)`, `\(h_0(t)\)` and the unobserved true value
 of biomarker at time `\(t\)` are linked by scale factor `\(\alpha\)`
 
-- when `\(f\)` is defined by equation `\((4)\)`, in addition to association with the 
+- When `\(f\)` is defined by equation `\((4)\)`, in addition to association with the 
 value of biomarker at time `\(t\)` through `\(\alpha_1\)`, `\(h_0(t)\)` is associate with 
 temporal slope of the biomarker `\(\alpha_2\)`
 
-- Other features such as area under the curve of the biomarker could inform the
-association between hazard and biomarker trajectories
+- Other formulations of `\(f\)` with features such as area under the curve of the 
+biomarker may inform the association between hazard and biomarker trajectories
 
 ]
 
@@ -222,16 +235,16 @@ association between hazard and biomarker trajectories
 
 ## Specifying the Model: Generalization
 
-The specification shared in previous slides, is a simplification of a more 
+The specification shared in the previous slides, is a simplification of a more 
 generalized formulation given in [*An overview of joint modeling of time-to-event and longitudinal outcomes*](https://www.annualreviews.org/doi/abs/10.1146/annurev-statistics-030718-105048) by Papageorgiou et al. 
 
 These generalizations:
 
-- `\(K\)` biomarkers being observed ( `\(K=1\)` in the simplified formulation)
+- `\(K\)` different biomarkers being observed
 - Each biomarker is allowed to have its own observation intervals
 - Different types of censoring
 `$$\delta = \begin{cases} 0 &amp;:&amp; \; cens_{right} \\ 1 &amp;:&amp; event \\ 2 &amp;:&amp; cens_{left} \\3 &amp;:&amp; cens_{interval} \end{cases}$$`
-- Extends eq (3) to generalized link (i.e. glmm)
+- Extends [eq(3)](#9) to generalized link (i.e. glmm)
 - *Exogenous* time-dependent covariate in survival model
 - Multiple TTE in competing risks setting (not included by Papageorgiou et al.)
 - &lt;svg viewBox="0 0 512 512" style="height:1em;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M428.8 137.6h-86.177a115.52 115.52 0 0 0 2.176-22.4c0-47.914-35.072-83.2-92-83.2-45.314 0-57.002 48.537-75.707 78.784-7.735 12.413-16.994 23.317-25.851 33.253l-.131.146-.129.148C135.662 161.807 127.764 168 120.8 168h-2.679c-5.747-4.952-13.536-8-22.12-8H32c-17.673 0-32 12.894-32 28.8v230.4C0 435.106 14.327 448 32 448h64c8.584 0 16.373-3.048 22.12-8h2.679c28.688 0 67.137 40 127.2 40h21.299c62.542 0 98.8-38.658 99.94-91.145 12.482-17.813 18.491-40.785 15.985-62.791A93.148 93.148 0 0 0 393.152 304H428.8c45.435 0 83.2-37.584 83.2-83.2 0-45.099-38.101-83.2-83.2-83.2zm0 118.4h-91.026c12.837 14.669 14.415 42.825-4.95 61.05 11.227 19.646 1.687 45.624-12.925 53.625 6.524 39.128-10.076 61.325-50.6 61.325H248c-45.491 0-77.21-35.913-120-39.676V215.571c25.239-2.964 42.966-21.222 59.075-39.596 11.275-12.65 21.725-25.3 30.799-39.875C232.355 112.712 244.006 80 252.8 80c23.375 0 44 8.8 44 35.2 0 35.2-26.4 53.075-26.4 70.4h158.4c18.425 0 35.2 16.5 35.2 35.2 0 18.975-16.225 35.2-35.2 35.2zM88 384c0 13.255-10.745 24-24 24s-24-10.745-24-24 10.745-24 24-24 24 10.745 24 24z"&gt;&lt;/path&gt;&lt;/svg&gt; most generalized formulation turns 
@@ -268,7 +281,7 @@ here I opted for simplified (special case) model
  - Supports a variety of parametric and flexible construction of `\(h_0(t)\)`
  - Supports single continuous longitudinal outcome
  - Does not support multiple competing risk settings
- - Supports options outlined in eq (3) and eq. (4)
+ - Supports options outlined in [eq(3)](#9) and eq. [eq(4)](#9)
  - Supports dynamic prediction
 
 - *[`JMbayes` by Rizopoulos et al.](https://cran.r-project.org/web/packages/JMbayes/index.html):*
@@ -320,19 +333,14 @@ effort
 
 
 ---
-## PBC data: Combinding longitudinal and TTE
-
-&lt;!-- JM package provides "followup [observation of] of 312 randomized patients with  --&gt;
-&lt;!-- primary biliary cirrhosis, a rare autoimmune liver disease, at Mayo Clinic" --&gt;
-
-&lt;img src="index_files/figure-html/pbc_i-1.png" width="720" /&gt;
-
-
----
 ## Application: Coding the Model
 
-**1. Model longitudinal process:** Here, we interested in trt effect.
-- Does the slope of bili differs between trt arms?
+**1. Model longitudinal process:** Here, we are interested in treatment effect.
+- Does the slope of bili differs between treatment arms?
+
+`$$log(serBilir|year, drug)=(\beta_0 + b_{0i}) + (\beta_1 + b_{1i}) year +  (\beta_2) durg:year + \epsilon_i(year)$$`
+`$$=\eta_i(year) + \epsilon_i(year) \; (7)$$`
+&lt;br&gt;
 
 
 ```r
@@ -340,11 +348,29 @@ mod_t &lt;- lme(log(serBilir) ~ year + drug:year,
              random = ~ 1 + year|id, data = pbc2)
 ```
 
+&lt;br&gt; 
+
+The coefficients for the mixed model are:
+
+
+|                   |     Value| Std.Error|   DF|    t-value|   p-value|
+|:------------------|---------:|---------:|----:|----------:|---------:|
+|(Intercept)        | 0.4956686| 0.0580754| 1631|  8.5349155| 0.0000000|
+|year               | 0.1761726| 0.0175476| 1631| 10.0397036| 0.0000000|
+|year:drugD-penicil | 0.0027708| 0.0241108| 1631|  0.1149199| 0.9085228|
+
+---
+## Application: Coding the Model
+
 
 **2. Model TTE:** Here, we interested in trt effect.
 - Is there hazard shift associated with treatment?
 - We use sex as precision variable
-- &lt;svg viewBox="0 0 576 512" style="height:1em;position:relative;display:inline-block;top:.1em;fill:orange;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937 0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288 354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"&gt;&lt;/path&gt;&lt;/svg&gt; note requirement `x = T`
+- &lt;svg viewBox="0 0 576 512" style="height:1em;position:relative;display:inline-block;top:.1em;fill:orange;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937 0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288 354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"&gt;&lt;/path&gt;&lt;/svg&gt; note the required parameter `x = T`
+
+
+`$$(h_i|year,drug, sex) = h_0(year) exp\lbrace (\gamma_1) drug + (\gamma_2) sex  + \alpha\eta_i(year)\rbrace \; (8)$$`
+&lt;br&gt;
 
 
 ```r
@@ -352,8 +378,23 @@ mod_cox &lt;- coxph(Surv(time = years, event = death) ~ drug + sex,
                  data = srv_d, x = T)
 ```
 
+&lt;br&gt;
+
+The coefficients for the coxph model are:
+
+
+|term          |   estimate| std.error|  statistic|   p.value|
+|:-------------|----------:|---------:|----------:|---------:|
+|drugD-penicil | -0.0115048| 0.1691843| -0.0680019| 0.9457841|
+|sexfemale     | -0.6505713| 0.2183562| -2.9794034| 0.0028881|
+
+---
+class: middle, left
+
+## Application: Coding the Model
+
 **3. Model JM:** Combine the two model specifications and jointly solve with defaults:
-- **`parameterization = value`** i.e specification in [eq(3)](#8)
+- **`parameterization = value`** i.e specification in [eq(3)](#9)
 - **`method = "weibull-PH-aGH"`**  &amp;#8594; parameterized weibull prop hazard
 
 
@@ -364,6 +405,70 @@ mod_jm &lt;- jointModel(lmeObject = mod_t, survObject = mod_cox,
 
 
 ---
+class: middle, left
+
+## Application: Interpreting the Model
+
+Two sets of coefficients are generated: one characterizing the 
+**longitudinal process** and another for the **TTE process**
+
+##### I. The coefficient for the longitudinal process:
+
+
+```r
+jm_sm &lt;- summary(mod_jm)
+knitr::kable(jm_sm$`CoefTable-Long`)
+```
+
+
+
+|                   |     Value|   Std.Err|   z-value|   p-value|
+|:------------------|---------:|---------:|---------:|---------:|
+|(Intercept)        | 0.4921437| 0.0583080| 8.4404154| 0.0000000|
+|year               | 0.1825825| 0.0183515| 9.9492135| 0.0000000|
+|year:drugD-penicil | 0.0043228| 0.0245140| 0.1763412| 0.8600259|
+
+- &lt;svg viewBox="0 0 512 512" style="height:1em;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M428.8 137.6h-86.177a115.52 115.52 0 0 0 2.176-22.4c0-47.914-35.072-83.2-92-83.2-45.314 0-57.002 48.537-75.707 78.784-7.735 12.413-16.994 23.317-25.851 33.253l-.131.146-.129.148C135.662 161.807 127.764 168 120.8 168h-2.679c-5.747-4.952-13.536-8-22.12-8H32c-17.673 0-32 12.894-32 28.8v230.4C0 435.106 14.327 448 32 448h64c8.584 0 16.373-3.048 22.12-8h2.679c28.688 0 67.137 40 127.2 40h21.299c62.542 0 98.8-38.658 99.94-91.145 12.482-17.813 18.491-40.785 15.985-62.791A93.148 93.148 0 0 0 393.152 304H428.8c45.435 0 83.2-37.584 83.2-83.2 0-45.099-38.101-83.2-83.2-83.2zm0 118.4h-91.026c12.837 14.669 14.415 42.825-4.95 61.05 11.227 19.646 1.687 45.624-12.925 53.625 6.524 39.128-10.076 61.325-50.6 61.325H248c-45.491 0-77.21-35.913-120-39.676V215.571c25.239-2.964 42.966-21.222 59.075-39.596 11.275-12.65 21.725-25.3 30.799-39.875C232.355 112.712 244.006 80 252.8 80c23.375 0 44 8.8 44 35.2 0 35.2-26.4 53.075-26.4 70.4h158.4c18.425 0 35.2 16.5 35.2 35.2 0 18.975-16.225 35.2-35.2 35.2zM88 384c0 13.255-10.745 24-24 24s-24-10.745-24-24 10.745-24 24-24 24 10.745 24 24z"&gt;&lt;/path&gt;&lt;/svg&gt; `\(\beta_{year} &gt; 0\)`: As time goes on
+`\(\uparrow\)` bili `\(\Rightarrow\)` liver function `\(\downarrow\)`
+
+- &lt;svg viewBox="0 0 512 512" style="height:1em;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M428.8 137.6h-86.177a115.52 115.52 0 0 0 2.176-22.4c0-47.914-35.072-83.2-92-83.2-45.314 0-57.002 48.537-75.707 78.784-7.735 12.413-16.994 23.317-25.851 33.253l-.131.146-.129.148C135.662 161.807 127.764 168 120.8 168h-2.679c-5.747-4.952-13.536-8-22.12-8H32c-17.673 0-32 12.894-32 28.8v230.4C0 435.106 14.327 448 32 448h64c8.584 0 16.373-3.048 22.12-8h2.679c28.688 0 67.137 40 127.2 40h21.299c62.542 0 98.8-38.658 99.94-91.145 12.482-17.813 18.491-40.785 15.985-62.791A93.148 93.148 0 0 0 393.152 304H428.8c45.435 0 83.2-37.584 83.2-83.2 0-45.099-38.101-83.2-83.2-83.2zm0 118.4h-91.026c12.837 14.669 14.415 42.825-4.95 61.05 11.227 19.646 1.687 45.624-12.925 53.625 6.524 39.128-10.076 61.325-50.6 61.325H248c-45.491 0-77.21-35.913-120-39.676V215.571c25.239-2.964 42.966-21.222 59.075-39.596 11.275-12.65 21.725-25.3 30.799-39.875C232.355 112.712 244.006 80 252.8 80c23.375 0 44 8.8 44 35.2 0 35.2-26.4 53.075-26.4 70.4h158.4c18.425 0 35.2 16.5 35.2 35.2 0 18.975-16.225 35.2-35.2 35.2zM88 384c0 13.255-10.745 24-24 24s-24-10.745-24-24 10.745-24 24-24 24 10.745 24 24z"&gt;&lt;/path&gt;&lt;/svg&gt; `\(\beta_{year:drug}\)` suggests no 
+significant treatment effect (as was seen with KM as well)
+
+---
+class: middle, left
+
+## Application: Interpreting the Model
+
+##### II. The coefficient for the TTE process:
+
+
+```r
+jm_sm &lt;- summary(mod_jm)
+knitr::kable(jm_sm$`CoefTable-Event`)
+```
+
+
+
+|              |      Value|   Std.Err|     z-value|   p-value|
+|:-------------|----------:|---------:|-----------:|---------:|
+|(Intercept)   | -4.1204142| 0.3446500| -11.9553569| 0.0000000|
+|drugD-penicil |  0.0035752| 0.1819656|   0.0196476| 0.9843245|
+|sexfemale     | -0.3085655| 0.2334414|  -1.3218117| 0.1862308|
+|Assoct        |  1.2359860| 0.0937268|  13.1871150| 0.0000000|
+|log(shape)    |  0.0171859| 0.0831963|   0.2065708| 0.8363451|
+
+
+- &lt;svg viewBox="0 0 512 512" style="height:1em;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M428.8 137.6h-86.177a115.52 115.52 0 0 0 2.176-22.4c0-47.914-35.072-83.2-92-83.2-45.314 0-57.002 48.537-75.707 78.784-7.735 12.413-16.994 23.317-25.851 33.253l-.131.146-.129.148C135.662 161.807 127.764 168 120.8 168h-2.679c-5.747-4.952-13.536-8-22.12-8H32c-17.673 0-32 12.894-32 28.8v230.4C0 435.106 14.327 448 32 448h64c8.584 0 16.373-3.048 22.12-8h2.679c28.688 0 67.137 40 127.2 40h21.299c62.542 0 98.8-38.658 99.94-91.145 12.482-17.813 18.491-40.785 15.985-62.791A93.148 93.148 0 0 0 393.152 304H428.8c45.435 0 83.2-37.584 83.2-83.2 0-45.099-38.101-83.2-83.2-83.2zm0 118.4h-91.026c12.837 14.669 14.415 42.825-4.95 61.05 11.227 19.646 1.687 45.624-12.925 53.625 6.524 39.128-10.076 61.325-50.6 61.325H248c-45.491 0-77.21-35.913-120-39.676V215.571c25.239-2.964 42.966-21.222 59.075-39.596 11.275-12.65 21.725-25.3 30.799-39.875C232.355 112.712 244.006 80 252.8 80c23.375 0 44 8.8 44 35.2 0 35.2-26.4 53.075-26.4 70.4h158.4c18.425 0 35.2 16.5 35.2 35.2 0 18.975-16.225 35.2-35.2 35.2zM88 384c0 13.255-10.745 24-24 24s-24-10.745-24-24 10.745-24 24-24 24 10.745 24 24z"&gt;&lt;/path&gt;&lt;/svg&gt; `\(\beta_{drug}\)` 
+indicates that treatment does not appear protective or harmful
+
+- &lt;svg viewBox="0 0 512 512" style="height:1em;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M428.8 137.6h-86.177a115.52 115.52 0 0 0 2.176-22.4c0-47.914-35.072-83.2-92-83.2-45.314 0-57.002 48.537-75.707 78.784-7.735 12.413-16.994 23.317-25.851 33.253l-.131.146-.129.148C135.662 161.807 127.764 168 120.8 168h-2.679c-5.747-4.952-13.536-8-22.12-8H32c-17.673 0-32 12.894-32 28.8v230.4C0 435.106 14.327 448 32 448h64c8.584 0 16.373-3.048 22.12-8h2.679c28.688 0 67.137 40 127.2 40h21.299c62.542 0 98.8-38.658 99.94-91.145 12.482-17.813 18.491-40.785 15.985-62.791A93.148 93.148 0 0 0 393.152 304H428.8c45.435 0 83.2-37.584 83.2-83.2 0-45.099-38.101-83.2-83.2-83.2zm0 118.4h-91.026c12.837 14.669 14.415 42.825-4.95 61.05 11.227 19.646 1.687 45.624-12.925 53.625 6.524 39.128-10.076 61.325-50.6 61.325H248c-45.491 0-77.21-35.913-120-39.676V215.571c25.239-2.964 42.966-21.222 59.075-39.596 11.275-12.65 21.725-25.3 30.799-39.875C232.355 112.712 244.006 80 252.8 80c23.375 0 44 8.8 44 35.2 0 35.2-26.4 53.075-26.4 70.4h158.4c18.425 0 35.2 16.5 35.2 35.2 0 18.975-16.225 35.2-35.2 35.2zM88 384c0 13.255-10.745 24-24 24s-24-10.745-24-24 10.745-24 24-24 24 10.745 24 24z"&gt;&lt;/path&gt;&lt;/svg&gt;  `\(\beta_{sex}\)` 
+suggests being female is associated with decrease hazard
+
+- &lt;svg viewBox="0 0 512 512" style="height:1em;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M428.8 137.6h-86.177a115.52 115.52 0 0 0 2.176-22.4c0-47.914-35.072-83.2-92-83.2-45.314 0-57.002 48.537-75.707 78.784-7.735 12.413-16.994 23.317-25.851 33.253l-.131.146-.129.148C135.662 161.807 127.764 168 120.8 168h-2.679c-5.747-4.952-13.536-8-22.12-8H32c-17.673 0-32 12.894-32 28.8v230.4C0 435.106 14.327 448 32 448h64c8.584 0 16.373-3.048 22.12-8h2.679c28.688 0 67.137 40 127.2 40h21.299c62.542 0 98.8-38.658 99.94-91.145 12.482-17.813 18.491-40.785 15.985-62.791A93.148 93.148 0 0 0 393.152 304H428.8c45.435 0 83.2-37.584 83.2-83.2 0-45.099-38.101-83.2-83.2-83.2zm0 118.4h-91.026c12.837 14.669 14.415 42.825-4.95 61.05 11.227 19.646 1.687 45.624-12.925 53.625 6.524 39.128-10.076 61.325-50.6 61.325H248c-45.491 0-77.21-35.913-120-39.676V215.571c25.239-2.964 42.966-21.222 59.075-39.596 11.275-12.65 21.725-25.3 30.799-39.875C232.355 112.712 244.006 80 252.8 80c23.375 0 44 8.8 44 35.2 0 35.2-26.4 53.075-26.4 70.4h158.4c18.425 0 35.2 16.5 35.2 35.2 0 18.975-16.225 35.2-35.2 35.2zM88 384c0 13.255-10.745 24-24 24s-24-10.745-24-24 10.745-24 24-24 24 10.745 24 24z"&gt;&lt;/path&gt;&lt;/svg&gt; `\(\alpha\)` 
+(i.e. `Assoc`) suggests `\(\uparrow\)` bili `\(\Rightarrow\)` hazard `\(\uparrow\)` 
+
+
+ 
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
