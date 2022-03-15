@@ -428,6 +428,7 @@ mod_cox %>% broom::tidy() %>%
   knitr::kable()
 ```
 
+
 ---
 class: middle, left
 
@@ -435,7 +436,7 @@ class: middle, left
 
 **3. Model JM:** Combine the two model specifications and jointly solve with defaults:
 - **`parameterization = value`** i.e specification in [eq(3)](#9)
-- **`method = "weibull-PH-aGH"`**  &#8594; parameterized weibull prop hazard
+- **`method = "weibull-PH-aGH"`**  &#8594; parameterized Weibull prop hazard
 
 ```{r modjm_build, echo=TRUE}
 mod_jm <- jointModel(lmeObject = mod_t, survObject = mod_cox,
@@ -462,7 +463,8 @@ knitr::kable(jm_sm$`CoefTable-Long`)
 $\uparrow$ bili $\Rightarrow$ liver function $\downarrow$
 
 - `r icons::fontawesome("hand-point-right")` $\beta_{year:drug}$ suggests no 
-significant treatment effect (as was seen with KM as well)
+significant treatment effect (as was seen with KM as well
+
 
 ---
 class: middle, left
@@ -491,9 +493,9 @@ suggests being female is associated with decrease hazard
 ## Application: Dynamic Prediction
 
 With model jointly solved, predictions connecting biomarker trajectories (e.g.
-value and/or slope and/or auc etc.) to proabilities events are feasible.
+value and/or slope and/or auc etc.) to probabilities events are feasible.
 
-```{r dyn_pred, echo= F, fig.height=6, fig.width= 10}
+```{r dyn_pred_val, echo= F, fig.height=6, fig.width= 10}
 ND <- subset(pbc2, id==15)
 survPreds <- vector('list', nrow(ND))
 for(i in 1:nrow(ND)){
@@ -510,3 +512,97 @@ mtext('Survival probability', side=4, line=-1, outer=TRUE)
 ```
 
 .footnote[Code snippet credit: [Dr Ben French](https://www.vumc.org/biostatistics/person/benjamin-french)] 
+
+
+
+
+---
+class: middle, left
+
+## Application: Coding the Model with `both` Value and Slope
+
+**3. Model JM:** Combine the two model specifications and jointly solve with defaults:
+- **`parameterization = both`** i.e specification in [eq(3)](#9)
+- **`method = "weibull-PH-aGH"`**  &#8594; parameterized Weibull prop hazard
+
+```{r modjmboth_build, echo=TRUE}
+derivForm <- list(fixed = ~ 1 + drug, indFixed=c(2,3), 
+                  random = ~ 1, indRandom=2)
+
+jm_mods_both <- jointModel(lmeObject = mod_t, 
+                           survObject = mod_cox,
+                           timeVar = "year",
+                           parameterization = "both", 
+                           derivForm = derivForm)
+```
+
+
+---
+class: middle, left
+
+## Application: Interpreting the Model with `both` Value and Slope
+
+Two sets of coefficients are generated: one characterizing the 
+**longitudinal process** and another for the **TTE process**
+
+##### I. The coefficient for the longitudinal process:
+
+```{r modjmboth_cfLong, echo=TRUE}
+jmboth_sm <- summary(jm_mods_both)
+knitr::kable(jmboth_sm$`CoefTable-Long`)
+```
+
+- `r icons::fontawesome("hand-point-right")` $\beta_{year} > 0$: As time goes on
+$\uparrow$ bili $\Rightarrow$ liver function $\downarrow$
+
+- `r icons::fontawesome("hand-point-right")` $\beta_{year:drug}$ suggests no 
+significant treatment effect (as was seen with KM as well)
+
+---
+class: middle, left
+
+## Application: Interpreting the Model with `both` Value and Slope
+
+##### II. The coefficient for the TTE process:
+
+```{r modjmboth_cfEvent, echo=TRUE}
+knitr::kable(jmboth_sm$`CoefTable-Event`)
+```
+
+
+- `r icons::fontawesome("hand-point-right")` $\beta_{drug}$ 
+indicates that treatment does not appear protective or harmful
+
+- `r icons::fontawesome("hand-point-right")`  $\beta_{sex}$ 
+suggests being female is associated with decrease hazard
+
+- `r icons::fontawesome("hand-point-right")` $\alpha_1$ 
+(i.e. `Assoct`) suggests $\uparrow$ bili $\Rightarrow$ hazard $\uparrow$ 
+
+- `r icons::fontawesome("hand-point-right")` $\alpha_2$ 
+(i.e. `Assoct.s`) suggests $\uparrow$ $d/dt$ bili $\Rightarrow$ hazard $\uparrow$ 
+
+---
+## Application: Dynamic Prediction with `both` Value and Slope
+
+```{r dyn_pred_both, echo= F, fig.height=6, fig.width= 10}
+ND <- subset(pbc2, id==15)
+survPreds <- vector('list', nrow(ND))
+for(i in 1:nrow(ND)){
+  set.seed(4)
+  survPreds[[i]] <- survfitJM(mod_jm, newdata=ND[1:i,])}
+
+par(mfrow=c(1,3))
+for(i in c(3,6,9)){
+  plot(survPreds[[i]], estimator='median', conf.int=TRUE, include.y=TRUE, pch=19, lwd=2, col='blue',
+       xlab='', ylab='', ylab2='', main=paste(round(survPreds[[i]]$last.time, 1), 'years'))}
+mtext('Time, years', side=1, line=-2, outer=TRUE)
+mtext('log serum bilirubin', side=2, line=-1, outer=TRUE)
+mtext('Survival probability', side=4, line=-1, outer=TRUE)
+```
+
+.footnote[Code snippet credit: [Dr Ben French](https://www.vumc.org/biostatistics/person/benjamin-french)] 
+
+
+
+
