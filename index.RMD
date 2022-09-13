@@ -945,14 +945,11 @@ mod_t$data %>% bind_cols(., fitted =   mod_t$fitted[,2]) %>%
 ---
 ###Running the model and summarizing the inference
 
-Recall the simulation parameter [\alpha](#36) = 5 
-
+Recall the simulation [parameter](#36) $\alpha = 5$ 
 ```{r}
-
-mod_jm <- jointModel(lmeObject = mod_t, survObject = mod_cox,
-                     timeVar = "t_obs")
+mod_jm <- jointModel(lmeObject = mod_t, survObject = mod_cox, timeVar = "t_obs")
 jmmod_sum <- summary(mod_jm)
-DT::datatable(jmmod_sum$`CoefTable-Event`) %>% 
+DT::datatable(jmmod_sum$`CoefTable-Event`,options = list(pageLength = 5)) %>% 
   DT::formatRound(columns=colnames(jmmod_sum$`CoefTable-Event`), digits=3)
 ```
 
