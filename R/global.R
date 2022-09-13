@@ -7,8 +7,11 @@ library(survival)
 library(survminer)
 library(JM)
 library(nlme)
-
 library(conflicted)
+
+# pkg conflict preference
+#------------------------
+conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")
 conflict_prefer("area", "patchwork")
 

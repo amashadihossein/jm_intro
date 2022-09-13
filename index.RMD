@@ -25,12 +25,16 @@ output:
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
 }
+
+.remark-code, .remark-inline-code { font-family: 'Source Code Pro', 'Lucida Console', Monaco, monospace;
+                                    font-size: 90%;
+                                  }
 </style>
 
 ```{r setup, include=F}
-source("./global.R")
+source("./R/global.R")
+source("./R/tseries_sim.R")
 ```
-
 
 
 
@@ -211,7 +215,7 @@ $$\eta_i(t) := E[y_i] = x_i(t) \beta + z_i(t) b_i$$
 .pull-right[
 ### 2. Hazard(t) model:
 
-$$h_i(t | M_i(t), w_i)=$$
+$$h_i(t | M_i(t), w_i) :=$$
 $$lim_{\Delta \to 0} P\lbrace t \leq T < t + \Delta t | T \geq t, M_i(t), w_i\rbrace/ \Delta t =$$
 $$h_0(t)exp\lbrace w_i \gamma + f(\alpha, w_i, b_i, M_i(t))\rbrace \; (2)$$
 <br>
@@ -603,6 +607,352 @@ mtext('Survival probability', side=4, line=-1, outer=TRUE)
 
 .footnote[Code snippet credit: [Dr Ben French](https://www.vumc.org/biostatistics/person/benjamin-french)] 
 
+---
+class: center, middle
+
+# Simulation case study: </br> Longitudinal biomarker data with biomarker-level associated missingness 
+
+---
+## Case Study Intro
+
+In clinical reserach, often health measurements are collected from patients over 
+time to monitor each patient's general wellbing as well as clinical response to 
+the intervention administered. For example, a blood test could measure a protein
+which can be a surrogate for inflammation or organ function. Of interest to 
+clinicians and researchers would be what the information content of each 
+patient's profile tell us about the patient's health, response to treatment or 
+likelihood of adverse events. Learning the signal in information content of 
+longitudinal profiles often requires considering features inherent to this family
+of data:
+
+1. The temporal observations are correlated across time
+2. If mutliple biomarkers are collected, correlation could also exist across 
+biomarkers
+3. The temporal profiles are "smooth" over time and often show higher order 
+trends (i.e. have curvature)
+4. Sometimes the value of the biomarkers inform missigness. For example, if the
+biomarker measures failure of an organ, it is reasonable to expect that 
+likelihood of mortality and thereby missingness in follow up observations 
+increases with increase in the value of the biomarker.
+
+With these factors in  mind, we seek to simulate a data that achieves some of 
+these features so to enable evaluation of modeling choices
 
 
+---
+## Set up
+
+### Group mean model
+
+First we create two prototypical profiles
+
+```{r mean_model_code, message=FALSE}
+knots <- c(0.25, 0.5, 0.75)
+theta <-cbind(
+  grp1 = c(0.1, 0.9, 0.4, 0.2, 0.1, 0.1, 0.1),
+  grp2 = c(0.1, 0.3, 0.5, 0.2, 0.1, 0.1, 0.1))
+
+
+t_obs <- 1:30
+t_obs.normalize <- (t_obs - min(t_obs))/(max(t_obs) - min(t_obs))
+basis <- splines::bs(x = t_obs.normalize, knots = knots, degree = 3, 
+                     Boundary.knots = c(0, 1), intercept = TRUE)
+y_spline <- basis %*% theta
+
+mu_profiles_true <- data.frame(t_obs, y_spline) %>% 
+  tidyr::pivot_longer(cols = -t_obs, names_to = "grps",
+                      values_to = "mu_true")
+
+```
+
+---
+
+### Group mean model: plot
+
+```{r mean_model_plot,  fig.height=6, fig.width= 10, message=FALSE}
+mu_profiles_true %>%
+  ggplot(aes(t_obs,y= mu_true,group=grps, color = grps)) + 
+  geom_point()+
+  geom_line(size = 1.2) +
+  ggsci::scale_color_jama()
+```
+
+---
+### Generating time series from mean model
+
+Using the mean model `mu_profiles_true` and an auto-regressive order 1 (AR1) 
+correlation structure, we generate longitudinal profiles assuming individual 
+random effect and observation noise drawn from normal distribution. (compare 
+[eq(7)](#29) to [eq(1)](#8) note lack of baseline)
+
+$$y_i(t) = z_i(t) b_i + \epsilon_i(t) \; (7)$$
+
+```{r tseries_nobaseline , message=FALSE}
+set.seed(1234)
+sim_ts_nobaseline <- sim_ts(mu_profiles_true = mu_profiles_true, rho_ar1 = .6)
+```
+
+```{r tseries_nobaseline_plot,  fig.height=6, fig.width= 10, echo=F, message=F}
+sim_ts_nobaseline %>% 
+  slice_sample(prop = .5) %>% 
+  ggplot(aes(x = t_obs,y = y, color = grps)) + 
+  geom_point(alpha = .2) + 
+  geom_line( aes(group = subjid), alpha = .2) +
+  geom_smooth() +
+  geom_line(aes(y = mu_true), linetype = 2, size = 1.5)+
+  xlab("Observation Day") +
+  ggsci::scale_color_jama()
+```
+
+---
+
+### Adding the baseline to individual profiles: mixed effect t-series
+
+The baseline adds sets 3 sets of feature-sets, each feature sets is correlated
+within featureset and uncorrelated between feature-set. While this level of
+complexity is not necessary, it  more closely mimics biological measurements 
+(e.g. correlated cytokines like IL-5 and IL-6 or correlated gene expressions).
+Here, the correlated featuresets were sampled from  multivariate normal with a 
+block diagonal covariance matrix. 
+
+```{r tseries,   message=FALSE}
+add_baseline(sim_ts = sim_ts_nobaseline) -> sim_dts
+```
+
+
+```{r baseline_core, fig.height=6, fig.width= 10, echo = F, message=F}
+sim_dts %>% 
+  select(subjid,contains("baseline")) %>% 
+  distinct() %>% select(-subjid) %>% cor() %>%
+  corrplot::corrplot()
+```
+
+---
+
+###  Mixed effect t-series: visualized
+
+The generated data now matches  a rendition of [eq(1)](#8), where we have 
+AR1 cor at unit (individual level) under gaussian random effect model, random
+gaussian observation noise and baseline factors (fixed-effect), all added on top
+of the two group mean profiles `mu_profiles_true`.
+
+```{r tseries_vis, fig.height=6, fig.width= 10, echo=F, message=F}
+sim_dts %>% 
+  slice_sample(prop = .5) %>% 
+  ggplot(aes(x = t_obs,y = y, color = grps)) + 
+  geom_point(alpha = .2) + 
+  geom_line( aes(group = subjid), alpha = .2) +
+  geom_smooth() +
+  geom_line(aes(y = mu_true), linetype = 2, size = 1.5)+
+  xlab("Observation Day") +
+  ggsci::scale_color_jama() 
+```
+
+---
+###  Mixed effect t-series: data
+
+Here is the glimpse of data content and structure so far for reference
+
+```{r tseries_dat, message=FALSE}
+glimpse(sim_dts)
+```
+
+
+---
+class: center, middle
+### Adding missingness: intuition
+
+At this point, our data has no missing value. Everyone is observed from day 1 
+through day 30. Here we would like to impose a missingness the likelihood of 
+which is dictated by the value of each patient's biomarker.
+
+Here, we seek to find when a patient experiences an event (e.g. death) making 
+the patient drop out of the observed group. We only observe for 30 days. Beyond 
+30 days, all are "censored" (i.e. no event observed during observation window). 
+We then go through each patient profile at each time-point and "flip a coin", 
+so-to-speak, and if head we mark the patient to experience the event. We can 
+think of this coin to be weighted such that the higher the value of the 
+biomarker gets, the higher likelihood of head.
+
+---
+### Adding missingness using ITS
+
+But how do we exactly sample from a distribution that is adjusted  to the  value
+of biomarker?  Given the mixed-effect longitudinal process simulated and the 
+distributional assumption of $h_0(t)$ as weibull, we have the hazard function, 
+$h(t)$ defined by [eq(1)](#8).
+
+Based on definition of hazard, we know:
+$$ h(t) := lim_{\Delta \to 0} P\lbrace t \leq T < t + \Delta t | T \geq t, 
+M_i(t), w_i\rbrace/ \Delta t = f(t)/S(t) = $$
+
+$$ -\frac{d}{dt} ln[1-F(t)] = - \frac{d}{dt} ln[S(t)]\; (8)$$
+
+Integrating both sides from T=0 to T=t, we have
+
+$$H(t) = -ln[S(t)]\; (9)$$
+We recall that $S(t)$ is the CDF of event distribution and that given 
+[eq(9)](#33) we can get $S(t)$ from numerical integration of $h(t)$. With 
+CDF(t,i) being available, we can now use the general inverse transform sampling 
+$$X \sim F^{-1}_X (U) \;(10)$$
+to sample from $f(t, i)$ via  
+$$f(t, i) \sim S^{-1}_{t,i}(U_i)\; (11)$$
+
+next
+
+---
+### Adding missingness using ITS: code for inverse S
+
+So based on [eq(11)](#33), to access $f(t,i)$, we simply sample for each subject
+$i$, from $U$. we then feed that into inverse survival function for subject $i$
+at time $t$, $S(t,i)$ to map uniform sampling distribution to time and 
+subject-specific event probability distribution.
+
+First, we define $S^{-1}_{t,i}$ `surv_inv`
+
+```{r ITS_code_sinv, echo=TRUE}
+surv_inv <- function (t, sim_dts_i, u_i, gamma_x_i) {
+  
+  # h() is the hazard function and we assume a Weibull baseline hazard
+  h <- function (s) {
+    # the linear predictor from the mixed model evaluated at time s
+    f <- as.vector(approxfun(x = sim_dts_i$t_obs_n,y = sim_dts_i$y_bar)(s))
+    exp(log(shape_wb) + (shape_wb - 1) * log(s) +  gamma_x_i  + f * alpha )
+  }
+  
+  # -log(S(t)) = H(t), where H(t) is the cumulative hazard function
+  log_s <- - integrate(h, lower = 0, upper = t)$value
+  obj <- - log_s  + log(u_i)
+  return(obj)
+}
+```
+
+
+---
+
+### Adding missingness using ITS: code
+
+
+
+```{r ITS_code}
+upp_cens <- 30 # fixed Type I censoring time
+shape_wb <- 1.5 # shape Weibull
+alpha <- 3 # association coefficients
+
+event_time <- sim_dts %>% 
+  distinct(subjid, gamma_x) %>%
+  mutate(u = runif(n = nrow(.))) %>%
+  mutate(t_event = NA) %>%
+  mutate(t_event = as.numeric(NA))
+
+for (i in 1:nrow(event_time)) {
+  up <- .95
+  subj_i <- event_time %>% slice(i) %>% pull(subjid)
+  u_i <-  event_time %>% slice(i) %>% pull(u)
+  gamma_x_i <- event_time %>% slice(i)  %>% pull(gamma_x)
+  sim_dts_i <- sim_dts %>% dplyr::filter(subjid == subj_i)
+  
+  t_root <- try(uniroot(surv_inv,
+                        interval = c(0+1e-05, up),
+                        sim_dts_i = sim_dts_i, u_i = u_i, 
+                        gamma_x_i = gamma_x_i)$root, TRUE)
+  event_time$t_event[i] <- if (!inherits(t_root, "try-error")) t_root else 1.2
+}
+
+```
+
+
+---
+### Adding missingness using ITS: event distribution
+
+For visual inspection, we can plot and make sure that likelihood of events 
+follows the trend value overall
+
+```{r event_dist, fig.height=6, fig.width= 10, echo=F, message=F}
+event_time <- event_time %>% 
+  mutate(t_event = t_event * (max(t_obs) - min(t_obs)) + min(t_obs)) %>%
+  mutate(event = if_else(t_event < upp_cens, 1, 0)) %>%
+  mutate(t_event = pmin(t_event, upp_cens))
+
+event_time %>% ggplot(aes(x = t_event)) + geom_histogram()
+```
+
+---
+### Adding missingness to biomarker data
+With events simulated, we can superimpose event time on biomarker and clean up
+<!-- With events simulated, we join the event with longitudinal profile. We then want -->
+<!--  to clean the data such that observations after event time-points are dropped ( -->
+<!--  it doesn't make sense for an observation to be recorded after let's say a  -->
+<!--  patient's death) -->
+```{r tseries_attenuate, message=FALSE}
+sim_dts_tte <- left_join(sim_dts,y = event_time) %>% filter(t_obs <= t_event) %>%
+  group_by(subjid) %>% mutate(event_point = if_else(event == 1 & t_obs == max(t_obs),"Y","N")) %>%
+  ungroup() %>% select(subjid, grps,contains("baseline"), t_obs,mu_true, y, t_event, event, event_point)
+
+```
+
+
+```{r tseries_attenuate_vis,fig.height=5, fig.width= 10, echo=F, message=F}
+g <- sim_dts_tte %>% 
+  group_by(subjid) %>%
+  mutate(event_point = if_else(event == 1 & t_obs == max(t_obs),"Y","N")) %>%
+  ungroup() %>% 
+  ggplot(aes(x = t_obs,y = y, color = grps, subjid = subjid)) + 
+  geom_point(alpha = .2,aes(shape = event_point)) + 
+  geom_point(data = sim_dts_tte %>% filter(event_point == "Y"),aes(shape = event_point)) + 
+  geom_line( aes(group = subjid), alpha = .2) +
+  geom_smooth(aes(group = grps)) +
+  geom_line(aes(y = mu_true), linetype = 2, size = 1.5)+
+  ggsci::scale_color_jama() +
+  xlab("Observation Day")
+
+plotly::ggplotly(g)
+```
+
+---
+## Inference
+
+Building the model:
+
+```{r sim_inference, message=FALSE}
+library(JM)
+mod_t <- lme(y ~ ns(t_obs, 3) * grps, data = sim_dts_tte, random = ~ t_obs| subjid,
+          control = lmeControl(opt = "optim"))
+
+mod_cox <- coxph(Surv(time = t_obs, event = event) ~ baseline1 + baseline2 + baseline3 +
+                   baseline4 + baseline5 + baseline6 +
+                   baseline7 + baseline8 + baseline9,
+                 data = sim_dts_tte %>% select(subjid,contains("baseline"),t_event,event) %>%
+                   distinct() %>%
+                   rename(t_obs = t_event),
+                 x = T)
+```
+
+---
+### Visualizing the mixed-model fit for a sampling of the simulated patients
+
+```{r sim_mm_fit, fig.height=5, fig.width= 10, echo=F, message=F}
+mod_t$data %>% bind_cols(., fitted =   mod_t$fitted[,2]) %>%
+  filter(subjid %in% paste0("subj",1:12)) %>%
+  ggplot(aes(x = t_obs, colour = grps,y = y, subjid = subjid)) +
+  geom_point(alpha = .5) +
+  geom_line(aes(y = fitted,group = subjid)) +
+  facet_wrap(~ subjid, ncol = 4) +
+  ggsci::scale_color_jama()
+
+```
+
+---
+###Running the model and summarizing the inference
+
+Recall the simulation parameter [\alpha](#36) = 5 
+
+```{r}
+
+mod_jm <- jointModel(lmeObject = mod_t, survObject = mod_cox,
+                     timeVar = "t_obs")
+jmmod_sum <- summary(mod_jm)
+DT::datatable(jmmod_sum$`CoefTable-Event`) %>% 
+  DT::formatRound(columns=colnames(jmmod_sum$`CoefTable-Event`), digits=3)
+```
 
