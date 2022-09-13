@@ -798,8 +798,6 @@ $$X \sim F^{-1}_X (U) \;(10)$$
 to sample from $f(t, i)$ via  
 $$f(t, i) \sim S^{-1}_{t,i}(U_i)\; (11)$$
 
-next
-
 ---
 ### Adding missingness using ITS: code for inverse S
 
@@ -945,11 +943,16 @@ mod_t$data %>% bind_cols(., fitted =   mod_t$fitted[,2]) %>%
 ---
 ###Running the model and summarizing the inference
 
-Recall the simulation [parameter](#36) $\alpha = 5$ 
+Recall the simulation [parameter](#36) $\alpha =$ `r alpha`
 ```{r}
 mod_jm <- jointModel(lmeObject = mod_t, survObject = mod_cox, timeVar = "t_obs")
 jmmod_sum <- summary(mod_jm)
-DT::datatable(jmmod_sum$`CoefTable-Event`,options = list(pageLength = 5)) %>% 
-  DT::formatRound(columns=colnames(jmmod_sum$`CoefTable-Event`), digits=3)
+cf_events <- jmmod_sum$`CoefTable-Event`
+rownames(cf_events) <- replace(rownames(cf_events),
+                               rownames(cf_events) == "Assoct", "alpha")
+cf_events <- cf_events[c(c("alpha","log(shape)"), 
+                       setdiff(rownames(cf_events),c("alpha","log(shape)"))),]
+DT::datatable(cf_events, options = list(pageLength = 5)) %>% 
+  DT::formatRound(columns=colnames(cf_events), digits=3)
 ```
 
