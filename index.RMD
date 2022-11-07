@@ -129,7 +129,7 @@ p0+ p2 #+  plot_layout(widths = c(2, 1))
 #### Combining longitudinal and TTE
 
 <!-- JM package provides "followup [observation of] of 312 randomized patients with  -->
-<!-- primary billiard cirrhosis, a rare autoimmune liver disease, at Mayo Clinic" -->
+<!-- primary biliary cirrhosis, a rare autoimmune liver disease, at Mayo Clinic" -->
 
 ```{r pbc_i, message=FALSE,echo=FALSE, fig.retina = 3, fig.width=10}
 set.seed(9)
