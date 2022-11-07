@@ -1,5 +1,5 @@
 ---
-title: "Modeling Inter-related Time-to-Event and Longtidinal Processes"
+title: "Modeling Inter-related Time-to-Event and Longitudinal Processes"
 subtitle: "A Review of Joint Modeling"
 author: "Afshin Mashadi-Hossein"
 date: "`r Sys.Date()`"
@@ -161,9 +161,9 @@ pbc2 %>% distinct(id) %>%
 
 - But death &#8594; missingness of serum bilirubin 
 
-- This is a Missng Not at Random (MNAR) case
+- This is a Misting Not at Random (MNAR) case
 
-- Ignoring MNAR &#8594; wrong (biasd) estimate of _bili(t)_
+- Ignoring MNAR &#8594; wrong (biased) estimate of _bili(t)_
 
 - Also _bili(t)_ is endogenous wrspt TTE &#8594; inappropriate as time-dependent
 covariate in a survival coxph model
@@ -615,8 +615,8 @@ class: center, middle
 ---
 ## Case Study Intro
 
-In clinical reserach, often health measurements are collected from patients over 
-time to monitor each patient's general wellbing as well as clinical response to 
+In clinical research, often health measurements are collected from patients over 
+time to monitor each patient's general wellbeing as well as clinical response to 
 the intervention administered. For example, a blood test could measure a protein
 which can be a surrogate for inflammation or organ function. Of interest to 
 clinicians and researchers would be what the information content of each 
@@ -626,7 +626,7 @@ longitudinal profiles often requires considering features inherent to this famil
 of data:
 
 1. The temporal observations are correlated across time
-2. If mutliple biomarkers are collected, correlation could also exist across 
+2. If multiple biomarkers are collected, correlation could also exist across 
 biomarkers
 3. The temporal profiles are "smooth" over time and often show higher order 
 trends (i.e. have curvature)
@@ -709,10 +709,10 @@ sim_ts_nobaseline %>%
 ### Adding the baseline to individual profiles: mixed effect t-series
 
 The baseline adds sets 3 sets of feature-sets, each feature sets is correlated
-within featureset and uncorrelated between feature-set. While this level of
+within feature-set and uncorrelated between feature-set. While this level of
 complexity is not necessary, it  more closely mimics biological measurements 
 (e.g. correlated cytokines like IL-5 and IL-6 or correlated gene expressions).
-Here, the correlated featuresets were sampled from  multivariate normal with a 
+Here, the correlated feature-sets were sampled from  multivariate normal with a 
 block diagonal covariance matrix. 
 
 ```{r tseries,   message=FALSE}
@@ -732,8 +732,8 @@ sim_dts %>%
 ###  Mixed effect t-series: visualized
 
 The generated data now matches  a rendition of [eq(1)](#8), where we have 
-AR1 cor at unit (individual level) under gaussian random effect model, random
-gaussian observation noise and baseline factors (fixed-effect), all added on top
+AR1 cor at unit (individual level) under Gaussian random effect model, random
+Gaussian observation noise and baseline factors (fixed-effect), all added on top
 of the two group mean profiles `mu_profiles_true`.
 
 ```{r tseries_vis, fig.height=6, fig.width= 10, echo=F, message=F}
